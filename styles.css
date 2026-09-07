@@ -1,0 +1,31 @@
+/*
+ * Default theme for mdeditor-kit.
+ * Shipped as `mdeditor-kit/styles.css` — consumers opt in by importing it.
+ * Every value is a CSS custom property so it can be overridden without
+ * fighting specificity.
+ */
+.mdeditor {
+  --mdeditor-font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mdeditor-font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  --mdeditor-font-size: 14px;
+  --mdeditor-line-height: 1.6;
+  --mdeditor-radius: 8px;
+  --mdeditor-border: 1px solid #e2e2e2;
+  --mdeditor-bg: #ffffff;
+  --mdeditor-fg: #1a1a1a;
+  --mdeditor-muted: #6b7280;
+  --mdeditor-accent: #2563eb;
+
+  box-sizing: border-box;
+  font-family: var(--mdeditor-font-family);
+  font-size: var(--mdeditor-font-size);
+  line-height: var(--mdeditor-line-height);
+  color: var(--mdeditor-fg);
+  background: var(--mdeditor-bg);
+}
+
+.mdeditor *,
+.mdeditor *::before,
+.mdeditor *::after {
+  box-sizing: inherit;
+}
