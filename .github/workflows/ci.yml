@@ -19,7 +19,7 @@ jobs:
     name: Lint, typecheck, build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -45,7 +45,7 @@ jobs:
     outputs:
       lowest: ${{ steps.engines.outputs.lowest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: engines
         run: echo "lowest=$(node -p "require('./package.json').engines.node.replace(/^>=/, '')")" >> "$GITHUB_OUTPUT"
 
@@ -62,7 +62,7 @@ jobs:
       matrix:
         node: ['${{ needs.versions.outputs.lowest }}', 'lts/*']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -81,7 +81,7 @@ jobs:
       matrix:
         react: ['18', '19']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
