@@ -209,6 +209,21 @@ export function syncSelection(root: Element, state: EditorState): void {
 }
 
 /**
+ * Converts a `StaticRange` from `InputEvent.getTargetRanges()` to model
+ * positions. Returns null when either endpoint falls outside `root` or on a
+ * non-text element.
+ */
+export function staticRangeToPos(
+  root: Element,
+  range: StaticRange,
+): { readonly from: Pos; readonly to: Pos } | null {
+  const from = pointToPos(root, range.startContainer, range.startOffset);
+  const to = pointToPos(root, range.endContainer, range.endOffset);
+  if (from === null || to === null) return null;
+  return { from, to };
+}
+
+/**
  * Builds a selection-only transaction from the current DOM selection.
  * Returns null when the DOM selection is outside `root` or unchanged.
  */

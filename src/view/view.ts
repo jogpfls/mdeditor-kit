@@ -1,6 +1,37 @@
-import { type EditorState, type Transaction } from '../core/internal';
+import { type EditorState } from '../core/internal';
 import { RawSource, Renderer, type MdClassNames } from './render';
+import { createInputHandler } from './input';
 import { selectionFromDOM, syncSelection } from './selection';
+import { type EditorHost } from './types';
+
+/** Id of the visually hidden Esc→Tab hint used as aria-describedby on the input. */
+const ESC_TAB_HINT_ID = 'md-esc-tab-hint';
+
+/**
+ * Inserts a visually hidden paragraph near `root` that describes the Esc→Tab
+ * focus-move shortcut, and wires `root`'s aria-describedby to it.
+ * Idempotent: re-uses an existing hint in the same document.
+ */
+function ensureEscTabHint(root: HTMLElement): void {
+  const doc = root.ownerDocument;
+  if (doc.getElementById(ESC_TAB_HINT_ID) === null) {
+    const hint = doc.createElement('p');
+    hint.id = ESC_TAB_HINT_ID;
+    hint.setAttribute(
+      'style',
+      'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0',
+    );
+    hint.textContent = 'Press Escape then Tab to move focus out of the editor.';
+    doc.body.appendChild(hint);
+  }
+  const current = root.getAttribute('aria-describedby') ?? '';
+  if (!current.split(' ').includes(ESC_TAB_HINT_ID)) {
+    root.setAttribute(
+      'aria-describedby',
+      current.length > 0 ? `${current} ${ESC_TAB_HINT_ID}` : ESC_TAB_HINT_ID,
+    );
+  }
+}
 
 /** How a view draws, apart from the state. Compared by value, so passing a new object each time is fine. */
 export type ViewOptions = {
@@ -20,12 +51,6 @@ export type ReadonlyView = {
   configure(options: ViewOptions): void;
   /** Stops drawing and empties the root. The view can be mounted again. */
   destroy(): void;
-};
-
-/** The interface the view calls back into: the editor provides this. */
-export type EditorHost = {
-  getState(): EditorState;
-  dispatch(tr: Transaction): void;
 };
 
 /**
@@ -80,6 +105,7 @@ export function createEditorView(host: EditorHost, options: ViewOptions = {}): E
   let root: HTMLElement | null = null;
   let renderer: Renderer | null = null;
   const raw = new RawSource();
+  const input = createInputHandler(host);
 
   function draw(prev: EditorState, next: EditorState): void {
     if (renderer === null || root === null) return;
@@ -107,11 +133,14 @@ export function createEditorView(host: EditorHost, options: ViewOptions = {}): E
     mount(newRoot) {
       if (root !== null) {
         root.ownerDocument.removeEventListener('selectionchange', onSelectionChange);
+        input.detach();
         renderer?.clear();
       }
       root = newRoot;
       renderer = new Renderer(root);
+      ensureEscTabHint(root);
       root.ownerDocument.addEventListener('selectionchange', onSelectionChange);
+      input.attach(root);
       const state = host.getState();
       draw(state, state);
     },
@@ -119,11 +148,14 @@ export function createEditorView(host: EditorHost, options: ViewOptions = {}): E
       draw(prev, next);
     },
     focus() {
-      root?.focus({ preventScroll: true });
+      if (root === null) return;
+      root.focus({ preventScroll: true });
+      syncSelection(root, host.getState());
     },
     destroy() {
       if (root !== null) {
         root.ownerDocument.removeEventListener('selectionchange', onSelectionChange);
+        input.detach();
         renderer?.clear();
         renderer = null;
         root = null;
