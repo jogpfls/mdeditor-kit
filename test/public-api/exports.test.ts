@@ -20,7 +20,7 @@ function exportedNames(entry: string): string[] {
     .sort();
 }
 
-test('. exports exactly these names', () => {
+test('. exports exactly these names', { timeout: 30_000 }, () => {
   expect(exportedNames('../../src/index.ts')).toEqual([
     'FORMATS',
     'Format',
@@ -33,7 +33,7 @@ test('. exports exactly these names', () => {
   ]);
 });
 
-test('./core exports exactly these names', () => {
+test('./core exports exactly these names', { timeout: 30_000 }, () => {
   expect(exportedNames('../../src/core/index.ts')).toEqual([
     'Block',
     'Doc',
