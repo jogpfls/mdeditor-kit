@@ -110,6 +110,8 @@ export function createEditor(init: EditorInit = {}): Editor {
         listener(prev, state);
       }
     },
+    getHistory: () => history,
+    env: { createId },
   };
 
   return {

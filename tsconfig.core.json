@@ -1,0 +1,14 @@
+{
+  // core must run anywhere: no DOM, no Node, no globals beyond the language.
+  // Using `document`, `DOMParser` or `crypto` in src/core fails to compile here.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": [],
+    "noEmit": true,
+    "declaration": false,
+    "emitDeclarationOnly": false
+  },
+  "include": ["src/core"],
+  "exclude": ["src/core/**/*.test.ts"]
+}

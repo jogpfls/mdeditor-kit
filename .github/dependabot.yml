@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      # One PR per toolchain area keeps the review surface small on a repo with
+      # this many dev dependencies.
+      lint:
+        patterns: ['eslint*', '@eslint*', 'typescript-eslint', 'prettier*']
+      test:
+        patterns: ['vitest', '@vitest/*', '@testing-library/*', 'jsdom', '@playwright/*']
+      build:
+        patterns: ['tsup', 'vite', 'typescript', 'publint', '@arethetypeswrong/*']
+    ignore:
+      # React is a peer dependency. Widening the range is a deliberate decision,
+      # not a dependency bump.
+      - dependency-name: react
+      - dependency-name: react-dom
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

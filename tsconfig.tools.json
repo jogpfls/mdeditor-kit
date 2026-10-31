@@ -1,0 +1,23 @@
+{
+  // Tooling and browser tests. Kept apart from tsconfig.json so that Node
+  // globals are available here without also becoming available in src/, which
+  // ships to the browser and must not reach for a Node API by accident.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // These files live outside src, so the inherited rootDir does not apply.
+    "rootDir": ".",
+    "types": ["node", "vitest/globals"],
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true
+  },
+  "include": [
+    "e2e",
+    "scripts",
+    "test",
+    "tsup.config.ts",
+    "vitest.config.ts",
+    "vite.config.ts",
+    "playwright.config.ts"
+  ]
+}

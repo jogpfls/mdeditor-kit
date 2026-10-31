@@ -1,43 +1,93 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  # Release calls this so the publish gate and the pull-request gate can never
+  # drift apart. There is one definition of "verified".
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   verify:
-    name: Lint, typecheck, test, build
+    name: Lint, typecheck, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run check:deps
+      - run: npm run build
+      - run: npm run check:exports
+      - run: npm run check:package
+      - run: npm run check:size
+      - run: npm run check:unused
 
-      - name: Format check
-        run: npm run format:check
+  versions:
+    # The oldest Node the package supports comes from `engines` in
+    # package.json, so the matrix below always tests that exact version and
+    # the two can never disagree.
+    name: Read supported Node versions
+    runs-on: ubuntu-latest
+    outputs:
+      lowest: ${{ steps.engines.outputs.lowest }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: engines
+        run: echo "lowest=$(node -p "require('./package.json').engines.node.replace(/^>=/, '')")" >> "$GITHUB_OUTPUT"
 
-      - name: Lint
-        run: npm run lint
+  test:
+    # The lowest version `engines` allows, and whatever Node line is LTS today
+    # (`lts/*`), so the top of the range moves on by itself. The consumer
+    # smoke test runs here too, so a package that needs a newer Node than
+    # `engines` says fails.
+    name: Test on Node ${{ matrix.node }}
+    needs: versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['${{ needs.versions.outputs.lowest }}', 'lts/*']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
 
-      - name: Typecheck
-        run: npm run typecheck
+      - run: npm ci
+      - run: npm run test:coverage
+      - run: npm run build
+      - run: npm run check:package
 
-      - name: Test
-        run: npm run test:coverage
+  react:
+    name: Test against React ${{ matrix.react }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        react: ['18', '19']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-      - name: Build
-        run: npm run build
-
-      - name: Package check
-        run: npm run check:exports
+      - run: npm ci
+      - run: npm install --no-save react@${{ matrix.react }} react-dom@${{ matrix.react }} @types/react@${{ matrix.react }} @types/react-dom@${{ matrix.react }}
+      - run: npm run typecheck
+      - run: npm run test

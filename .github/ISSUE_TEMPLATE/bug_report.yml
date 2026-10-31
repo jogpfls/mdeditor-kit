@@ -1,0 +1,49 @@
+name: Bug report
+description: Something behaves differently than documented
+labels: [bug]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Editor bugs are usually a sequence of keystrokes.
+      placeholder: |
+        1. Starting value: "# Heading"
+        2. Put the caret at the end of the line
+        3. Press Enter, then Backspace
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      placeholder: |
+        Expected: the block becomes a paragraph
+        Actual: the heading is kept and the caret jumps to the start
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      description: contentEditable behaviour differs between engines, so this matters.
+      placeholder: Chrome 140 / Safari 18 / Firefox 133
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ime
+    attributes:
+      label: Input method
+      options:
+        - label: This happens while composing text (Korean, Japanese, Chinese, …)

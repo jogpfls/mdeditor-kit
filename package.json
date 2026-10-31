@@ -6,8 +6,9 @@
     "markdown",
     "editor",
     "react",
-    "md",
-    "wysiwyg"
+    "contenteditable",
+    "rich-text",
+    "commonmark"
   ],
   "license": "MIT",
   "author": "jogpfls",
@@ -23,30 +24,26 @@
   "sideEffects": [
     "**/*.css"
   ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
-    "./styles.css": "./dist/index.css",
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12.0"
   },
   "packageManager": "npm@11.13.0",
   "publishConfig": {
@@ -56,7 +53,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.core.json && tsc -p tsconfig.tools.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -64,42 +61,83 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "clean": "rimraf dist",
     "prepublishOnly": "npm run build",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "npm run build && changeset publish",
-    "check:exports": "publint && attw --pack . --exclude-entrypoints ./styles.css"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
+    "check:exports": "publint && attw --pack . --profile esm-only",
+    "check:package": "node scripts/check-package.mjs",
+    "check:size": "node scripts/check-size.mjs",
+    "prepare": "husky",
+    "check:unused": "knip",
+    "check:deps": "depcruise src --config .dependency-cruiser.mjs",
+    "bench": "vite-node scripts/bench-core.ts",
+    "test:e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.7",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.2",
     "@eslint/js": "^9.37.0",
-    "@testing-library/dom": "^10.4.1",
+    "@playwright/test": "^1.63.0",
+    "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "commonmark-spec": "^0.31.2",
+    "dependency-cruiser": "^18.7.0",
+    "esbuild": "^0.27.7",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^6.1.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-react-you-might-not-need-an-effect": "^1.0.2",
+    "fast-check": "^4.10.2",
     "globals": "^16.4.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.0.0",
+    "knip": "^6.34.0",
+    "lint-staged": "^17.5.0",
+    "markdown-it": "^15.0.3",
     "prettier": "^3.6.2",
     "publint": "^0.3.14",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "rimraf": "^6.0.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",
+    "vite": "^7.3.6",
+    "vite-node": "^3.2.4",
     "vitest": "^3.2.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{js,mjs,json,md,yml,css}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "mdast-util-from-markdown": "^2.1.0",
+    "mdast-util-gfm-footnote": "^2.1.0",
+    "mdast-util-gfm-strikethrough": "^2.0.1",
+    "mdast-util-gfm-table": "^2.0.0",
+    "mdast-util-gfm-task-list-item": "^2.0.0",
+    "micromark": "^4.0.3",
+    "micromark-extension-gfm-footnote": "^2.1.0",
+    "micromark-extension-gfm-strikethrough": "^2.1.0",
+    "micromark-extension-gfm-table": "^2.1.2",
+    "micromark-extension-gfm-task-list-item": "^2.1.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
   }
 }

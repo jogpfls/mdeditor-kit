@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mdeditor-kit e2e fixture</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; }
+      #editor {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px;
+        min-height: 200px;
+        outline: none;
+      }
+      #editor [contenteditable="false"] { outline: 2px solid blue; }
+      [data-block-id][data-selected] { outline: 2px solid orange; }
+      #state { margin-top: 1rem; font-size: 0.85em; white-space: pre; }
+    </style>
+  </head>
+  <body>
+    <div id="editor"></div>
+    <pre id="state"></pre>
+    <pre id="debug-sel"></pre>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest a syntax or capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the problem, not just the API you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What do you do today instead?
+      description: If there is no workaround, say so.
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: This adds a new block or inline syntax
+        - label: This changes markdown output for existing documents
